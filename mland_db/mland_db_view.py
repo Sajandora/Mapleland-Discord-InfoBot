@@ -1,9 +1,32 @@
 # mland_db_view.py
 import discord
 
-# ✅ 검색 결과 Embed 생성 함수
+MAPLE_IO_BASE_URL = "https://maplestory.io/api/gms/62"
+RESULTS_PER_PAGE = 10
+
+# ✅ 단일 검색 결과 Embed 생성 함수
+def build_entry_embed(entry):
+    embed = discord.Embed(
+        title=entry['name_ko'],
+        description=f"[🔗 세부 정보 페이지로 이동하기]({entry['link']})",
+        color=discord.Color.green()
+    ).set_footer(text="출처: mapledb.kr")
+
+    code = entry['code']
+    category = entry['category']
+
+    if category == 'item':
+        embed.set_thumbnail(url=f"{MAPLE_IO_BASE_URL}/item/{code}/icon?resize=2")
+    elif category == 'mob':
+        embed.set_thumbnail(url=f"{MAPLE_IO_BASE_URL}/mob/{code}/render/stand")
+    elif category == 'map':
+        embed.set_thumbnail(url=f"{MAPLE_IO_BASE_URL}/map/{code}/minimap?resize=2")
+
+    return embed
+
+# ✅ 검색 결과 목록 Embed 생성 함수
 def build_results_embed(results, current_page):
-    page_results = results[current_page * 10:(current_page + 1) * 10]
+    page_results = results[current_page * RESULTS_PER_PAGE:(current_page + 1) * RESULTS_PER_PAGE]
     desc = "\n".join([f"**{i+1}.** {e['name_ko']} ({e['category']})" for i, e in enumerate(page_results)])
     return discord.Embed(
         title=f"🔍 검색 결과 (총 {len(results)}개 중 {current_page+1}페이지):",
@@ -18,12 +41,12 @@ class ResultView(discord.ui.View):
         self.user_id = user_id
         self.results = results
         self.current_page = current_page
-        self.total_pages = (len(results) - 1) // 10 + 1
+        self.total_pages = (len(results) - 1) // RESULTS_PER_PAGE + 1
         self.refresh_buttons()
 
     def refresh_buttons(self):
         self.clear_items()
-        page_results = self.results[self.current_page * 10:(self.current_page + 1) * 10]
+        page_results = self.results[self.current_page * RESULTS_PER_PAGE:(self.current_page + 1) * RESULTS_PER_PAGE]
         for i, entry in enumerate(page_results):
             self.add_item(ResultButton(label=str(i+1), entry=entry, user_id=self.user_id))
 
@@ -48,20 +71,7 @@ class ResultButton(discord.ui.Button):
             await interaction.response.send_message("❌ 이 버튼은 해당 사용자만 사용할 수 있습니다.", ephemeral=True)
             return
 
-        embed = discord.Embed(
-            title=self.entry['name_ko'],
-            description=f"[🔗 세부 정보 페이지로 이동하기]({self.entry['link']})",
-            color=discord.Color.green()
-        ).set_footer(text="출처: mapledb.kr")
-
-        if self.entry['category'] == 'item':
-            embed.set_thumbnail(url=f"https://maplestory.io/api/gms/62/item/{self.entry['code']}/icon?resize=2")
-        elif self.entry['category'] == 'mob':
-            embed.set_thumbnail(url=f"https://maplestory.io/api/gms/62/mob/{self.entry['code']}/render/stand")
-        elif self.entry['category'] == 'map':
-            embed.set_thumbnail(url=f"https://maplestory.io/api/gms/62/map/{self.entry['code']}/minimap?resize=2")
-
-        await interaction.response.edit_message(embed=embed, view=None)
+        await interaction.response.edit_message(embed=build_entry_embed(self.entry), view=None)
 
 # ✅ 페이지 이동 버튼
 class PageNavButton(discord.ui.Button):
