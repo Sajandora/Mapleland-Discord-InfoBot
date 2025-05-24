@@ -37,6 +37,7 @@ async def on_ready():
     logger.info(f"✅ 봇 실행됨: {bot.user}")
 
 # ✅ 일반 메시지로 검색 처리
+# ✅ 일반 메시지로 검색 처리
 @bot.event
 async def on_message(message):
     if message.author.bot:
@@ -51,7 +52,7 @@ async def on_message(message):
         # 접두사 '!'로 시작하는 메시지는 검색으로 처리
         if message.content.startswith("!"):
             keyword = message.content[1:].strip()
-            results = search_mapledb_all(keyword)
+            results = search_mapledb_all(keyword)  # ✅ 정렬도 중복 제거도 하지 않음
 
             if not results:
                 await message.channel.send(f"🔍 `{keyword}`에 대한 정보를 찾을 수 없습니다.")
