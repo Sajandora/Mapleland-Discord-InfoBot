@@ -102,4 +102,4 @@ DISCORD_BOT_TOKEN=your_real_token_here
 ---
 
 ## 🙌 기여 및 문의
-* 질문, 버그 리포트는 [Issues 탭](https://github.com/yourusername/mapleland-discord-bot/issues)에서 남겨주세요.
+* 질문, 버그 리포트는 [Issues 탭](https://github.com/Sajandora/Mapleland-Discord-InfoBot/issues)에서 남겨주세요.
